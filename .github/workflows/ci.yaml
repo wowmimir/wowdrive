@@ -1,23 +1,33 @@
 name: CI
 
-on: [push]
+on:
+  push:
+    branches: ["main"]
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Install Dependencies
-        run: npm install -g npm && npm install
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
 
-      - name: Copy .env.example files
-        shell: bash
-        run: find . -type f -name ".env.example" -exec sh -c 'cp "$1" "${1%.*}"' _ {} \;
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Copy .env.example to .env
+        run: |
+          find . -type f -name ".env.example" -exec sh -c 'cp "$1" "${1%.*}"' _ {} \;
 
       - name: Typecheck
-        run: npm typecheck
+        run: npm run typecheck
 
       - name: Lint
-        run: npm lint
+        run: npm run lint
